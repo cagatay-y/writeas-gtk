@@ -1,0 +1,67 @@
+id: as.write.writeas-gtk
+runtime: org.gnome.Platform
+runtime-version: 3.30
+sdk: org.gnome.Sdk
+command: writeas-gtk
+appstream-compose: false
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.golang
+finish-args:
+  - '--share=network'
+  - '--share=ipc'
+  - '--socket=x11'
+  - '--socket=wayland'
+  - '--filesystem=xdg-run/dconf'
+  - '--filesystem=~/.config/dconf:ro'
+  - '--talk-name=ca.desrt.dconf'
+  - '--env=DCONF_USER_CONFIG_DIR=.config/dconf'
+  - '--filesystem=~/.writeas:create'
+rename-desktop-file: writeas-gtk.desktop
+rename-appdata-file: writeas-gtk.appdata.xml
+rename-icon: write-as
+modules:
+  - name: writeas-cli
+    buildsystem: simple
+    build-options:
+      env:
+        GOBIN: /app/bin/
+    build-commands:
+      - . /usr/lib/sdk/golang/enable.sh;
+        export GOPATH=$PWD;
+        go install github.com/writeas/writeas-cli/cmd/writeas
+    sources:
+      - type: git
+        url: https://github.com/atotto/clipboard
+        commit: aa9549103943c05f3e8951009cdb6a0bec2c8949
+        dest: src/github.com/atotto/clipboard
+      - type: git
+        url: https://github.com/mitchellh/go-homedir
+        commit: ae18d6b8b3205b561c79e8e5f69bff09736185f4
+        dest: src/github.com/mitchellh/go-homedir
+      - type: git
+        url: https://github.com/writeas/writeas-cli
+        commit: e05f5bd9432323459d91251782a0b1f71455584e
+        dest: src/github.com/writeas/writeas-cli
+      - type: git
+        url: https://code.as/core/socks.git
+        commit: 5be269b4e6645df01c78c8dfcfe5b5fa0d336591
+        dest: src/code.as/core/socks
+      - type: git
+        url: https://gopkg.in/urfave/cli.v1
+        commit: cfb38830724cc34fedffe9a2a29fb54fa9169cd1
+        dest: src/gopkg.in/urfave/cli.v1
+
+  - name: gtksourceview
+    sources:
+      - type: archive
+        url: https://download.gnome.org/sources/gtksourceview/3.24/gtksourceview-3.24.9.tar.xz
+        sha256: 699d76a453e6a3d3331906346e3dbfa25f2cbc9ec090e46635e9c6bb595e07c2
+    buildsystem: autotools
+
+  - name: writeas-gtk
+    sources:
+      - type: git
+        url: https://code.as/writeas/writeas-gtk.git
+      - type: patch
+        path: app-id.patch
+    buildsystem: meson
